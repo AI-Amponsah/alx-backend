@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
-""" """
+"""This module defines the function `index_range`"""
 
 import csv
 import math
-from typing import List
+from typing import List, Tuple
 
 
-def index_range(page: int, page_size: int) -> tuple[int, int]:
-    """Calculate the start and end indices for pagination."""
-    start = (page - 1) * page_size
-    end = start + page_size
-    return start, end
+def index_range(page: int, page_size: int) -> Tuple[int, int]:
+    """Returns a tuple of size two containing a start index and an end index"""
+    start_index = page_size * (page - 1)
+    end_index = page_size * page
 
- 
+    return (start_index, end_index)
+
+
 class Server:
     """Server class to paginate a database of popular baby names.
     """
     DATA_FILE = "Popular_Baby_Names.csv"
 
     def __init__(self):
+        """Initializes the instance of Server"""
         self.__dataset = None
 
     def dataset(self) -> List[List]:
@@ -33,10 +35,10 @@ class Server:
         return self.__dataset
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
-            """ Setting pagination """
-            assert isinstance(page, int) and isinstance(page_size, int)
-            assert page > 0 and page_size > 0
+        """Retrieve a specific "page" of data from the dataset"""
+        assert isinstance(page, int) and isinstance(page_size, int)
+        assert page > 0 and page_size > 0
 
-            start, end = index_range(page, page_size)
+        start_index, end_index = index_range(page, page_size)
 
-            return self.dataset()[start: end]
+        return self.dataset()[start_index: end_index]
