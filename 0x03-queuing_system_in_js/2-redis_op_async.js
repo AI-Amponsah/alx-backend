@@ -1,34 +1,44 @@
-import { createClient, print } from "redis";
-import { promisify } from "util";
+import { print, createClient } from 'redis';
+import { promisify } from 'util';
 
-const client = createClient();
+const redisClient = createClient();
 
-client
-  .on("connect", () => {
-    console.log("Redis client connected to the server");
-  })
-  .on("error", (error) => {
-    console.log(`Redis client not connected to the server: ${error}`);
-  });
+redisClient.on('error', (error) => {
+  console.log(`Redis client not connected to server: ${error.message}`);
+  redisClient.quit();
+});
 
+const getAsync = promisify(redisClient.get).bind(redisClient);
+
+/**
+ * Set a key-value pair in redis
+ * @param {string} schoolName - key
+ * @param {string} value      - value
+ */
 function setNewSchool(schoolName, value) {
-  client.set(schoolName, value, print);
+  redisClient.set(schoolName, value, print);
 }
 
-
-
-const get = promisify(client.get).bind(client);
-
+/**
+ * Gets and display the value associated with given key
+ * in redis store - asynchronously.
+ * @param {string} schoolName - key to search in redis
+ */
 async function displaySchoolValue(schoolName) {
-    const res = await client.get(schoolName).catch((error) => {
-      if (error) {
-        console.log(error);
-        throw error;
-      }
-    });
-    console.log(res);
-  }
+  const value = await getAsync(schoolName);
+  if (value) console.log(value);
+}
 
-displaySchoolValue("Holberton");
-setNewSchool("HolbertonSanFrancisco", "100");
-displaySchoolValue("HolbertonSanFrancisco");
+/**
+ * Entry point
+ */
+async function main() {
+  await displaySchoolValue('Holberton');
+  setNewSchool('HolbertonSanFrancisco', '100');
+  await displaySchoolValue('HolbertonSanFrancisco');
+}
+
+redisClient.on('connect', () => {
+  console.log('Redis client connected to the server');
+  main();
+});

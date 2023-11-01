@@ -1,68 +1,39 @@
 #!/usr/bin/env python3
-"""Create a class LRUCache that inherits from
-BaseCaching and is a caching system:
-
-You must use self.cache_data - dictionary from
-the parent class BaseCaching
-You can overload def __init__(self): but don’t
-forget to call the parent init: super().__init__()
-def put(self, key, item):
-Must assign to the dictionary self.cache_data the
-item value for the key key.
-If key or item is None, this method should not do
-anything.
-If the number of items in self.cache_data is higher
-that BaseCaching.MAX_ITEMS:
-you must discard the least recently used item
-(LRU algorithm)
-you must print DISCARD: with the key discarded
-and following by a new line
-def get(self, key):
-Must return the value in self.cache_data linked to key.
-If key is None or if the key doesn’t exist in
-self.cache_data, return None.
 """
-
-
-BaseCaching = __import__('base_caching').BaseCaching
+LRU caching module
+"""
+from base_caching import BaseCaching
+from typing import Any, Optional
 
 
 class LRUCache(BaseCaching):
-    """_summary_
+    """ LRU cache class
     """
-
-    def __init__(self):
-        """_summary_
+    def put(self, key: Any, item: Any) -> None:
+        """ Adds data to cache based on LRU policy
+            - Args:
+                - key: new entry's key
+                - item: entry's value
         """
-        super().__init__()
-        self.usedKeys = []
+        if not key or not item:
+            return
+        new_cache_data = {key: item}
+        if len(self.cache_data) == self.MAX_ITEMS:
+            key_to_remove = list(self.cache_data.keys())[0]
+            self.cache_data.pop(key_to_remove)
+            print(f'DISCARD: {key_to_remove}')
+        self.cache_data.update(new_cache_data)
 
-    def put(self, key, item):
-        """_summary_
-
-        Args:
-                        key (_type_): _description_
-                        item (_type_): _description_
+    def get(self, key: Any) -> Optional[Any]:
+        """ Gets cache data associated with given key
+            and updates dict in accordance to LRU policy
+            - Args:
+                - key to look for
+            - Return:
+                - value associated with the key
         """
-        if key is not None and item is not None:
-            self.cache_data[key] = item
-            if key not in self.usedKeys:
-                self.usedKeys.append(key)
-            else:
-                self.usedKeys.append(
-                    self.usedKeys.pop(self.usedKeys.index(key)))
-            if len(self.usedKeys) > BaseCaching.MAX_ITEMS:
-                discard = self.usedKeys.pop(0)
-                del self.cache_data[discard]
-                print('DISCARD: {:s}'.format(discard))
-
-    def get(self, key):
-        """return the value in self.cache_data linked to key
-
-        Args:
-                        key (_type_): _description_
-        """
-        if key is not None and key in self.cache_data.keys():
-            self.usedKeys.append(self.usedKeys.pop(self.usedKeys.index(key)))
-            return self.cache_data.get(key)
-        return None
+        cache_item = self.cache_data.get(key)
+        if cache_item:
+            self.cache_data.pop(key)
+            self.cache_data.update({key: cache_item})
+        return cache_item
