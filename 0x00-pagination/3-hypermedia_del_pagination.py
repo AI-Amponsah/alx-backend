@@ -5,7 +5,7 @@ Deletion-resilient hypermedia pagination
 
 import csv
 import math
-from typing import Dict, List, Optional
+from typing import List, Dict
 
 
 class Server:
@@ -40,32 +40,23 @@ class Server:
         return self.__indexed_dataset
 
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
-        """ Returns page data plus info to next and prev pages
-            - Args:
-                - page: page to look for information
-                - page_size: size of each page
-            - Return:
-                - dictionary of:
-                    - index: index of first item in the current pages
-                    - next_index: index of next piece of data
-                    - data: actual page of the dataset
-                    - page_size: current page size
-        """
-        indexed_data = self.indexed_dataset()
-        indexed_data_length = len(indexed_data)
-        assert index is not None and index < indexed_data_length and index >= 0
-        truncated_data: List[List] = []
-        next_index = index
-        while len(truncated_data) < page_size and \
-                next_index < indexed_data_length:
-            data = indexed_data.get(next_index)
-            if data:
-                truncated_data.append(data)
-            next_index += 1
+        """ return all data"""
+        assert type(index) == int and type(page_size) == int
+        assert 0 <= index < len(self.indexed_dataset())
 
-        page_size = len(truncated_data)
-        response_data = {'index': index,
-                         'next_index': next_index,
-                         'page_size': page_size,
-                         'data': truncated_data}
-        return response_data
+        data = []
+        next_index = index + page_size
+
+        for i in range(index, next_index):
+            if self.indexed_dataset().get(i):
+                data.append(self.indexed_dataset()[i])
+            else:
+                i += 1
+                next_index += 1
+
+        return {
+            'data': data,
+            'index': index,
+            'next_index': next_index,
+            'page_size': page_size
+        }
